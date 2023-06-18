@@ -23,11 +23,16 @@
 
 ------------------------------------------------------------------------------*/
 
+#define LEGACY_I2C
+
 #include <Arduino.h>
 #include <Wire.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include "LIDARLite_v4LED.h"
+
+
+uint8_t  LIDARLite_v4LED::transmissionError = 0;
 
 /*------------------------------------------------------------------------------
   Configure
@@ -331,7 +336,7 @@ void LIDARLite_v4LED::write(uint8_t regAddr,  uint8_t * dataBytes,
     nackCatcher = Wire.endTransmission();
     if (nackCatcher != 0)
     {
-        // handle nack issues in here
+        transmissionError = nackCatcher;
     }
 } /* LIDARLite_v4LED::write */
 
@@ -384,6 +389,7 @@ void LIDARLite_v4LED::write(uint8_t regAddr,  uint8_t * dataBytes,
 void LIDARLite_v4LED::read(uint8_t regAddr,  uint8_t * dataBytes,
                            uint8_t numBytes, uint8_t lidarliteAddress)
 {
+    uint8_t nackCatcher;
 
 #ifdef LEGACY_I2C
 
@@ -393,9 +399,12 @@ void LIDARLite_v4LED::read(uint8_t regAddr,  uint8_t * dataBytes,
     Wire.beginTransmission(lidarliteAddress);
     Wire.write(regAddr);
 
+    nackCatcher = Wire.endTransmission(DONT_STOP); // performs repeated start
+
     // A nack means the device is not responding, report the error over serial
-    if (Wire.endTransmission(DONT_STOP)) // performs repeated start
+    if (nackCatcher)
     {
+        transmissionError = nackCatcher;
         Serial.println("> nack");
     }
 

@@ -33,6 +33,7 @@
 class LIDARLite_v4LED
 {
   public:
+      static uint8_t transmissionError;
       void      configure   (uint8_t configuration = 0, uint8_t lidarliteAddress = LIDARLITE_ADDR_DEFAULT);
 
       void      setI2Caddr  (uint8_t newAddress, uint8_t disableDefault, uint8_t lidarliteAddress = LIDARLITE_ADDR_DEFAULT);
